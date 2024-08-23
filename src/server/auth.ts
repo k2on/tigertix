@@ -51,6 +51,11 @@ export const authOptions: NextAuthOptions = {
         id: user.id,
       },
     }),
+    async signIn({ user }) {
+        const allowed = "g.clemson.edu";
+        if (user.email?.endsWith(`@${allowed}`)) return true;
+        return false;
+    },
   },
   adapter: DrizzleAdapter(db, {
     usersTable: users,
@@ -63,15 +68,6 @@ export const authOptions: NextAuthOptions = {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
   ],
 };
 
