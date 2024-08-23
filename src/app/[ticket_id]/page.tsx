@@ -22,7 +22,7 @@ async function getTicket(id: string) {
   });
 }
 
-export async function generateMetedata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ticket = await getTicket(params.ticket_id);
   if (!ticket)
     return {
