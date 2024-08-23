@@ -8,7 +8,7 @@ import { games } from "@/server/db/schema";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function Home() {
-  const game = await db.query.games.findFirst({
+  const gamesList = await db.query.games.findMany({
     orderBy: games.startAt,
   });
 
@@ -16,17 +16,22 @@ export default async function Home() {
     <HydrateClient>
       <Header />
       <div className="px-2 pt-2">
-        {game ? (
-          <Link href={"/game/" + game.id}>
-            <Card>
-              <CardHeader>
-                <CardTitle>{game.name}</CardTitle>
-              </CardHeader>
-            </Card>
-          </Link>
-        ) : (
-          <span>No Upcoming Games</span>
-        )}
+        <h2 className="font-semibold text-gray-400">Upcoming Games</h2>
+        <div className="flex flex-col gap-2">
+          {gamesList ? (
+            gamesList.map((game) => (
+              <Link href={"/game/" + game.id}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{game.name}</CardTitle>
+                  </CardHeader>
+                </Card>
+              </Link>
+            ))
+          ) : (
+            <span>No Upcoming Games</span>
+          )}
+        </div>
       </div>
     </HydrateClient>
   );

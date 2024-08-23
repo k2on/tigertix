@@ -31,7 +31,7 @@ export const posts = createTable(
       .$defaultFn(() => crypto.randomUUID()),
     gameId: varchar("game_id", { length: 256 }).notNull(),
     seatType: varchar("seat_type", { length: 256 }).notNull(),
-    price: decimal("price", { precision: 5 }).notNull(),
+    price: decimal("price", { precision: 5, scale: 0 }).notNull(),
     createdById: varchar("created_by", { length: 255 })
       .notNull()
       .references(() => users.id),
@@ -41,7 +41,8 @@ export const posts = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
-    soldAt: timestamp("sold_at", { withTimezone: true }),
+    removedAt: timestamp("removed_at", { withTimezone: true }),
+    removedReason: varchar("removedReason", { length: 255 }),
   },
   (example) => ({
     createdByIdIdx: index("created_by_idx").on(example.createdById),
@@ -157,3 +158,24 @@ export const verificationTokens = createTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   }),
 );
+
+export const offers = createTable("offers", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  postId: varchar("post_id", { length: 256 }).notNull(),
+  createdById: varchar("created_by", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  price: decimal("price", { precision: 5, scale: 0 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    () => new Date(),
+  ),
+  acceptedAt: timestamp("removed_at", { withTimezone: true }),
+  removedAt: timestamp("removed_at", { withTimezone: true }),
+  removedReason: varchar("removedReason", { length: 255 }),
+});

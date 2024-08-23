@@ -82,7 +82,9 @@ export default async function Page({ params }: Props) {
           </div>
         ) : (
           <>
-            <Button className="w-full">Buy Now</Button>
+            <Link href={`/${ticket.id}/offer`}>
+              <Button className="w-full">Make Offer</Button>
+            </Link>
           </>
         )}
       </div>

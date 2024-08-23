@@ -22,7 +22,7 @@ export default async function Page({ params }: Props) {
   });
   if (!game) return "Game not found";
   const tickets = await db.query.posts.findMany({
-    where: and(eq(posts.gameId, params.game_id), isNull(posts.soldAt)),
+    where: and(eq(posts.gameId, params.game_id), isNull(posts.removedAt)),
     with: {
       poster: true,
     },
@@ -39,9 +39,11 @@ export default async function Page({ params }: Props) {
         </Card>
       </div>
       <div className="px-2 pt-4">
-        {tickets.map((t) => (
-          <Ticket key={t.id} ticket={t} user={t.poster} />
-        ))}
+        {tickets.length ? (
+          tickets.map((t) => <Ticket key={t.id} ticket={t} user={t.poster} />)
+        ) : (
+          <span>There are no tickets for sale</span>
+        )}
       </div>
     </>
   );

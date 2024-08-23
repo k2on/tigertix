@@ -44,7 +44,7 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
   },
   callbacks: {
     session: ({ session, token }) => ({
@@ -55,10 +55,13 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     async signIn({ user }) {
-        const allowed = "g.clemson.edu";
-        if (user.email?.endsWith(`@${allowed}`)) return true;
-        return false;
+      const allowed = "g.clemson.edu";
+      if (user.email?.endsWith(`@${allowed}`)) return true;
+      return false;
     },
+  },
+  pages: {
+    signIn: "/auth/signin",
   },
   adapter: DrizzleAdapter(db, {
     usersTable: users,
