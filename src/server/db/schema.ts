@@ -8,6 +8,9 @@ import {
   text,
   timestamp,
   varchar,
+  decimal,
+  numeric,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
@@ -22,8 +25,13 @@ export const createTable = pgTableCreator((name) => `tigertix_${name}`);
 export const posts = createTable(
   "post",
   {
-    id: serial("id").primaryKey(),
-    name: varchar("name", { length: 256 }),
+    id: varchar("id", { length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    gameId: varchar("game_id", { length: 256 }).notNull(),
+    seatType: varchar("seat_type", { length: 256 }).notNull(),
+    price: decimal("price", { precision: 5 }).notNull(),
     createdById: varchar("created_by", { length: 255 })
       .notNull()
       .references(() => users.id),
@@ -31,14 +39,35 @@ export const posts = createTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
+      () => new Date(),
     ),
+    soldAt: timestamp("sold_at", { withTimezone: true }),
   },
   (example) => ({
     createdByIdIdx: index("created_by_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
-  })
+    gameIndex: index("game_idx").on(example.gameId),
+  }),
 );
+
+export const postRelations = relations(posts, ({ one }) => ({
+  game: one(games, { fields: [posts.gameId], references: [games.id] }),
+  poster: one(users, { fields: [posts.createdById], references: [users.id] }),
+}));
+
+export const games = createTable("game", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: varchar("name", { length: 255 }).notNull(),
+  image: varchar("image", { length: 255 }).notNull(),
+  isAway: boolean("is_away").notNull(),
+  startAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+});
+
+export const gameRelations = relations(games, ({ many }) => ({
+  tickets: many(posts),
+}));
 
 export const users = createTable("user", {
   id: varchar("id", { length: 255 })
@@ -84,7 +113,7 @@ export const accounts = createTable(
       columns: [account.provider, account.providerAccountId],
     }),
     userIdIdx: index("account_user_id_idx").on(account.userId),
-  })
+  }),
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -107,7 +136,7 @@ export const sessions = createTable(
   },
   (session) => ({
     userIdIdx: index("session_user_id_idx").on(session.userId),
-  })
+  }),
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -126,5 +155,5 @@ export const verificationTokens = createTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  }),
 );

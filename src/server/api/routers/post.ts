@@ -5,6 +5,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
+import { v4 } from "uuid";
 import { posts } from "@/server/db/schema";
 
 export const postRouter = createTRPCRouter({
@@ -17,12 +18,23 @@ export const postRouter = createTRPCRouter({
     }),
 
   create: protectedProcedure
-    .input(z.object({ name: z.string().min(1) }))
+    .input(
+      z.object({
+        game_id: z.string().uuid(),
+        seat_type: z.string(),
+        price: z.number(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
+      const id = v4() as string;
       await ctx.db.insert(posts).values({
-        name: input.name,
+        id: id,
+        gameId: input.game_id,
+        seatType: input.seat_type,
+        price: input.price.toString(),
         createdById: ctx.session.user.id,
       });
+      return { id };
     }),
 
   getLatest: publicProcedure.query(async ({ ctx }) => {
